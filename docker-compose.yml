@@ -17,6 +17,10 @@ services:
     restart: unless-stopped
     env_file:
       - ./senda-cms/.env
+    environment:
+      # Enable polling for hot reload (required for Docker volumes on Windows)
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
     ports:
       - "3000:3000"
     volumes:
