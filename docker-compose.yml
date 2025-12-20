@@ -1,0 +1,119 @@
+# Senda - Full Stack Docker Compose (Development)
+# This file orchestrates all services: Frontend (CMS), Backend (API), Database, and TTS
+#
+# Each service uses its own .env file:
+#   - senda-cms/.env   -> Frontend container environment
+#   - senda-api/.env   -> Backend & PostgreSQL container environment
+
+services:
+  # ===========================================
+  # Frontend - Next.js CMS (Development Mode)
+  # ===========================================
+  cms:
+    build:
+      context: ./senda-cms
+      dockerfile: Dockerfile
+    container_name: senda-cms
+    restart: unless-stopped
+    env_file:
+      - ./senda-cms/.env
+    ports:
+      - "3000:3000"
+    volumes:
+      # Source code for hot reload
+      - ./senda-cms/src:/usr/src/app/src
+      - ./senda-cms/public:/usr/src/app/public
+      # Config files
+      - ./senda-cms/next.config.ts:/usr/src/app/next.config.ts
+      - ./senda-cms/tsconfig.json:/usr/src/app/tsconfig.json
+      - ./senda-cms/tailwind.config.ts:/usr/src/app/tailwind.config.ts:ro
+      - ./senda-cms/postcss.config.mjs:/usr/src/app/postcss.config.mjs:ro
+      - ./senda-cms/components.json:/usr/src/app/components.json:ro
+      # Preserve container's node_modules (avoid Windows/Linux conflicts)
+      - /usr/src/app/node_modules
+      # Persist Next.js cache for faster rebuilds
+      - cms_next_cache:/usr/src/app/.next
+    depends_on:
+      - api
+    networks:
+      - senda-network
+
+  # ===========================================
+  # Backend - FastAPI
+  # ===========================================
+  api:
+    build:
+      context: ./senda-api
+      dockerfile: Dockerfile
+    container_name: senda-api
+    restart: always
+    env_file:
+      - ./senda-api/.env
+    environment:
+      # Override host and port to use Docker network (internal port is 5432)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      # Override Kokoro URL to use Docker network
+      - KOKORO_API_URL=http://kokoro_tts:8880/v1/audio/speech
+    ports:
+      - "8081:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - senda-network
+
+  # ===========================================
+  # Database - PostgreSQL
+  # ===========================================
+  postgres:
+    image: postgres:18
+    container_name: senda-postgres
+    restart: always
+    env_file:
+      - ./senda-api/.env
+    ports:
+      - "5439:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - pg_data:/var/lib/postgresql/18/docker
+      - ./docker/postgres_init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - senda-network
+
+  # ===========================================
+  # TTS Service - Kokoro (Nvidia GPU Required)
+  # ===========================================
+  kokoro_tts:
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:latest
+    container_name: senda-kokoro
+    restart: always
+    ports:
+      - "8880:8880"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - senda-network
+
+# ===========================================
+# Networks
+# ===========================================
+networks:
+  senda-network:
+    driver: bridge
+
+# ===========================================
+# Volumes
+# ===========================================
+volumes:
+  pg_data:
+  cms_next_cache:
