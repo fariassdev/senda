@@ -163,15 +163,15 @@ Each service requires its own environment file:
 
 **API** (`senda-api/.env`):
 
-| Variable          | Description                         |
-| ----------------- | ----------------------------------- |
-| `DATABASE_URL`    | PostgreSQL connection string        |
-| `JWT_SECRET`      | Secret key for JWT tokens           |
-| `GEMINI_API_KEY`  | Google Gemini API key               |
-| `KOKORO_API_URL`  | Kokoro TTS service URL              |
-| `AWS_ACCESS_KEY`  | AWS credentials for S3              |
-| `AWS_SECRET_KEY`  | AWS credentials for S3              |
-| `S3_BUCKET_NAME`  | S3 bucket for audio storage         |
+| Variable                | Description                  |
+| ----------------------- | ---------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string |
+| `JWT_SECRET`            | Secret key for JWT tokens    |
+| `GEMINI_API_KEY`        | Google Gemini API key        |
+| `KOKORO_API_URL`        | Kokoro TTS service URL       |
+| `AWS_ACCESS_KEY_ID`     | AWS credentials for S3       |
+| `AWS_SECRET_ACCESS_KEY` | AWS credentials for S3       |
+| `S3_BUCKET_NAME`        | S3 bucket for audio storage  |
 
 **CMS** (`senda-cms/.env`):
 
