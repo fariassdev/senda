@@ -79,7 +79,7 @@ cp .env.example .env
 uvicorn senda.app:app --reload --port 8000
 
 # Or using Makefile
-make run
+make runserver-dev
 ```
 
 **Access:**
@@ -295,7 +295,7 @@ senda/
 
 ```bash
 # Start server
-uvicorn senda.app:app --port 8081
+make runserver-dev
 
 # Access spec
 curl http://localhost:8081/openapi.json > openapi.json
