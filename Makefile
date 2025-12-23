@@ -81,7 +81,7 @@ migrate:
 	@echo "Running database migrations..."
 	cd senda-api && "$(MAKE)" migrate
 
-# Seed database with initial data
+# Seed database with initial data (only if database is empty)
 db-seed:
 	@echo "Seeding database..."
 	$(MAKE) db-init
@@ -89,8 +89,17 @@ db-seed:
 	docker compose up -d postgres
 	@echo "Waiting for Postgres readiness..."
 	docker compose exec -T postgres bash -lc 'until pg_isready -U "$$POSTGRES_USER"; do sleep 1; done'
-	@echo "Running seed SQL file..."
-	docker compose exec -T postgres bash -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f /docker-entrypoint-initdb.d/seed_db.sql'
+	@echo "Checking if database already has data..."
+	@docker compose exec -T postgres bash -lc '\
+		COUNT=$$(psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -tAc "SELECT COUNT(*) FROM public.\"user\";"); \
+		if [ "$$COUNT" -gt 0 ]; then \
+			echo "Database already contains $$COUNT users. Skipping seed."; \
+			exit 0; \
+		else \
+			echo "Database is empty. Running seed..."; \
+			psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f /docker-entrypoint-initdb.d/seed_db.sql; \
+			echo "Seed completed successfully."; \
+		fi'
 
 # Connect to PostgreSQL shell
 db-shell:
@@ -133,10 +142,6 @@ setup:
 	@echo "Setting up Senda full stack development environment..."
 	@echo "1. Starting all services..."
 	$(MAKE) up-build
-	@echo "2. Initializing database..."
-	$(MAKE) db-init
-	@echo "3. Running migrations..."
-	$(MAKE) migrate
 	@echo ""
 	@echo "Senda full stack setup complete!"
 	@echo "   - CMS:      http://localhost:3000"

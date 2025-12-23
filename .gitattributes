@@ -1,0 +1,22 @@
+# Ensure consistent line endings across platforms
+* text=auto
+
+# Force LF for shell scripts (crucial for Docker containers)
+*.sh text eol=lf
+
+# Force LF for other Unix-specific files
+Dockerfile text eol=lf
+Makefile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Explicitly set binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
