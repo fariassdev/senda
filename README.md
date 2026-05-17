@@ -1,41 +1,75 @@
-# Senda 🧘‍♀️
+<div align="center">
 
-> AI-Powered Meditation Course Platform
+<img src="./docs/mockups/assets/logo.svg" width="150" height="150" alt="Senda Logo">
 
-Senda is a complete platform for creating and managing guided meditation courses using artificial intelligence. Generate meditation scripts with Google Gemini and convert them to high-quality audio using Kokoro TTS.
+# Senda
 
-## ✨ Features
+**AI-Powered Meditation Course Platform**
 
-- **🎯 Course Management** - Create and organize meditation courses with multiple lessons
-- **🤖 AI Script Generation** - Automatically generate meditation scripts using Google Gemini
-- **🗣️ Text-to-Speech** - Convert scripts to audio via Kokoro TTS with customizable voices
-- **📦 Batch Processing** - Generate scripts and audio for entire courses at once
-- **🔐 Admin Authentication** - Secure JWT-based admin-only access
-- **☁️ Cloud Ready** - Deploy to Google Cloud Run (API) and Vercel (CMS)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue)](./senda-api/version.py)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue)](./LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python)](./senda-api/pyproject.toml)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)](./senda-cms/package.json)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](./docker-compose.yml)
 
-## 🏗️ Architecture
+A complete platform for creating and managing guided meditation courses using artificial intelligence. Generate meditation scripts with **Google Gemini** and convert them to high-quality audio using **Kokoro TTS**.
+
+[Documentation](#documentation) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Deployment](#deployment)
+
+</div>
+
+## Repository Structure
+
+Senda is a **multirepo project** with three separate Git repositories coordinated through a central orchestrator:
+
+```
+senda/                          # Orchestrator Repository
+├── senda-api/                  # Backend service (independent repo)
+│   └── README.md              # API Documentation
+├── senda-cms/                  # Frontend service (independent repo)
+│   └── README.md              # CMS Documentation
+├── docker-compose.yml          # Full stack orchestration
+├── Makefile                    # Development commands
+└── docs/                       # Shared documentation
+```
+
+**Repository Details:**
+- **senda** (orchestrator): Coordinates deployment and local development
+- **[senda-api](https://github.com/fariassdev/senda-api)** (independent): FastAPI backend — FastAPI backend for course management & AI integration
+- **[senda-cms](https://github.com/fariassdev/senda-cms)** (independent): Next.js frontend — Next.js admin dashboard for content creation
+
+## Key Features
+
+- **Course Management** — Create and organize meditation courses with multiple lessons
+- **AI Script Generation** — Automatically generate meditation scripts using Google Gemini  
+- **Text-to-Speech** — Convert scripts to audio via Kokoro TTS with customizable voices
+- **Batch Processing** — Generate scripts and audio for entire courses at once
+- **Admin Authentication** — Secure JWT-based admin-only access
+- **Cloud Ready** — Deploy to Google Cloud Run (API) and Vercel (CMS)
+
+## Architecture
 
 ```mermaid
 flowchart TB
-    subgraph CMS["🖥️ senda-cms (Next.js 16 + TypeScript)"]
+    subgraph CMS["Frontend: senda-cms (Next.js 16 + TypeScript)"]
         UI[Admin Dashboard]
         RQ[React Query]
         ZS[Zustand Store]
     end
 
-    subgraph API["⚡ senda-api (Python 3.12 + FastAPI)"]
+    subgraph API["Backend: senda-api (Python 3.12 + FastAPI)"]
         Routes[REST API Routes]
         Services[Business Services]
         Repos[Repositories]
     end
 
-    subgraph External["☁️ External Services"]
-        Gemini[🤖 Google Gemini]
-        Kokoro[🗣️ Kokoro TTS]
-        S3[📦 AWS S3]
+    subgraph External["External Services"]
+        Gemini["Google Gemini API"]
+        Kokoro["Kokoro TTS"]
+        S3["AWS S3"]
     end
 
-    subgraph Data["💾 Data Layer"]
+    subgraph Data["Data Layer"]
         PG[(PostgreSQL)]
     end
 
@@ -50,72 +84,75 @@ flowchart TB
     Services --> S3
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- [Docker](https://www.docker.com/) and Docker Compose
-- NVIDIA GPU with drivers (required for Kokoro TTS)
+- [Docker](https://www.docker.com/) and Docker Compose  
+- NVIDIA GPU with CUDA drivers (required for Kokoro TTS)
+- Git
 
 ### One-Command Setup
 
+**Repository Setup:** This project contains three Git repositories coordinated together:
+- `senda-api/` — Backend API (FastAPI + Python)
+- `senda-cms/` — Frontend CMS (Next.js + TypeScript)
+
 ```bash
-# Clone the main repository
+# Clone the orchestrator repository
 git clone https://github.com/fariassdev/senda.git
 cd senda
 
-# Clone the senda-api repository
+# Clone the service repositories
 git clone https://github.com/fariassdev/senda-api.git
-
-# Clone the senda-cms repository
 git clone https://github.com/fariassdev/senda-cms.git
 
 # Configure environment files
 cp senda-api/.env.example senda-api/.env
 cp senda-cms/.env.local.example senda-cms/.env
 
-# Full stack setup: build, initialize DB, run migrations and start services
+# Full stack setup: build, initialize DB, migrate, and start services
 make setup
 ```
 
 ### Access the Services
 
-| Service    | URL                     | Description              |
-| ---------- | ----------------------- | ------------------------ |
-| CMS        | http://localhost:3000   | Admin Dashboard          |
-| API        | http://localhost:8081   | REST API                 |
-| API Docs   | http://localhost:8081/api/docs | Swagger Documentation |
-| PostgreSQL | localhost:5439          | Database                 |
-| Kokoro TTS | http://localhost:8880   | Text-to-Speech Service   |
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **CMS** | http://localhost:3000 | Admin dashboard for course management |
+| **API** | http://localhost:8081 | REST API backend |
+| **API Docs** | http://localhost:8081/api/docs | Interactive Swagger documentation |
+| **Database** | localhost:5439 | PostgreSQL |
+| **TTS Service** | http://localhost:8880 | Text-to-speech engine |
 
-## 📦 Project Structure
+## Project Structure
 
 ```
-senda/
-├── senda-api/              # Backend (Python FastAPI)
-│   ├── senda/              # Application source code
-│   │   ├── api/            # Routes, schemas, middlewares
-│   │   ├── core/           # Config, enums, dependencies
-│   │   ├── domain/         # DTOs, repository interfaces
-│   │   ├── infrastructure/ # Models, repositories, providers
-│   │   └── services/       # Business logic
-│   ├── tests/              # API and unit tests
-│   └── terraform/          # GCP infrastructure as code
+senda/                          # Orchestrator root
+├── senda-api/                  # Backend (Python FastAPI)
+│   ├── senda/
+│   │   ├── api/               # Routes, schemas, middlewares
+│   │   ├── core/              # Config, enums, dependencies
+│   │   ├── domain/            # DTOs, repository interfaces
+│   │   ├── infrastructure/    # Models, repositories, providers
+│   │   └── services/          # Business logic
+│   ├── tests/                 # API and unit tests
+│   └── terraform/             # GCP infrastructure
 │
-├── senda-cms/              # Frontend (Next.js TypeScript)
+├── senda-cms/                  # Frontend (Next.js TypeScript)
 │   ├── src/
-│   │   ├── app/            # Next.js App Router pages
-│   │   ├── components/     # Reusable UI components
-│   │   ├── containers/     # Feature-specific containers
-│   │   └── hooks/          # API hooks (React Query)
-│   └── docs/               # CMS documentation
+│   │   ├── app/               # App Router pages
+│   │   ├── components/        # Reusable UI components
+│   │   ├── containers/        # Feature containers with logic
+│   │   └── hooks/             # React Query hooks
+│   └── public/                # Static assets
 │
-├── docker-compose.yml      # Full stack orchestration
-├── Makefile                # Development commands
-└── docs/                   # Project-level diagrams
+├── docker-compose.yml          # Full stack orchestration
+├── Makefile                    # Development commands
+└── docs/                       # Architecture & diagrams
 ```
 
-## 🛠️ Development Commands
+## Development Commands
 
 All commands are executed from the project root using `make`:
 
@@ -129,7 +166,7 @@ make logs         # View all logs
 make status       # Check service status
 ```
 
-### Database Commands
+### Database Management
 
 ```bash
 make db-init      # Initialize databases
@@ -138,111 +175,93 @@ make db-shell     # Connect to PostgreSQL shell
 make migrate      # Run migrations
 ```
 
-### Individual Services
+### Service-Specific Commands
 
 ```bash
-make logs-api     # View API logs only
-make logs-cms     # View CMS logs only
+make logs-api     # View API logs
+make logs-cms     # View CMS logs
 make restart-api  # Restart API service
 make restart-cms  # Restart CMS service
-make shell-api    # Shell into API container
-make shell-cms    # Shell into CMS container
-```
-
-### Full Command Reference
-
-```bash
+make shell-api    # Access API container shell
+make shell-cms    # Access CMS container shell
 make help         # Show all available commands
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
-Each service requires its own environment file:
+Each service requires its own configuration file.
 
-**API** (`senda-api/.env`):
+**API** (`senda-api/.env`)
 
-| Variable                | Description                  |
-| ----------------------- | ---------------------------- |
-| `DATABASE_URL`          | PostgreSQL connection string |
-| `JWT_SECRET`            | Secret key for JWT tokens    |
-| `GEMINI_API_KEY`        | Google Gemini API key        |
-| `KOKORO_API_URL`        | Kokoro TTS service URL       |
-| `AWS_ACCESS_KEY_ID`     | AWS credentials for S3       |
-| `AWS_SECRET_ACCESS_KEY` | AWS credentials for S3       |
-| `S3_BUCKET_NAME`        | S3 bucket for audio storage  |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | ✓ |
+| `JWT_SECRET` | Secret key for JWT token signing | ✓ |
+| `GEMINI_API_KEY` | Google Gemini API key | ✓ |
+| `KOKORO_API_URL` | Kokoro TTS service URL | ✓ |
+| `AWS_ACCESS_KEY_ID` | AWS S3 credentials | ✓ |
+| `AWS_SECRET_ACCESS_KEY` | AWS S3 credentials | ✓ |
+| `S3_BUCKET_NAME` | S3 bucket for audio files | ✓ |
 
-**CMS** (`senda-cms/.env`):
+**CMS** (`senda-cms/.env`)
 
-| Variable                   | Description                    |
-| -------------------------- | ------------------------------ |
-| `NEXT_PUBLIC_API_BASE_URL` | Backend API URL                |
-| `NEXT_PUBLIC_BUILD`        | Environment identifier         |
-| `JWT_SECRET`               | JWT secret (must match API)    |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `NEXT_PUBLIC_API_BASE_URL` | Backend API endpoint | ✓ |
+| `NEXT_PUBLIC_BUILD` | Environment identifier | ✓ |
+| `JWT_SECRET` | Must match backend secret | ✓ |
 
-## 🚢 Deployment
+## Deployment
 
 ### Production Architecture
 
-- **API**: Google Cloud Run (auto-scaling containers)
-- **CMS**: Vercel (edge deployment)
-- **Database**: Neon serveless DB for PostgreSQL
-- **TTS**: Self-hosted Kokoro (Oracle Cloud)
+| Component | Platform | Purpose |
+|-----------|----------|---------|
+| **API** | Google Cloud Run | Auto-scaling containerized backend |
+| **CMS** | Vercel | Edge-deployed frontend |
+| **Database** | Neon | Serverless PostgreSQL |
+| **TTS** | Oracle Cloud | Self-hosted Kokoro service |
 
 ### CI/CD Pipeline
 
-The project uses GitHub Actions for automated deployments:
+GitHub Actions automates deployments based on branch:
 
-- **Production** (`main` branch) → Deploys to production after approval
-- **Staging** (`develop` branch) → Automatic deployment to staging
-- **Preview** (Pull Requests) → Preview deployments on Vercel
-
-For detailed deployment instructions, see:
-- [API Deployment Guide](./senda-api/DEPLOYMENT.md)
-- [Deployment Guide](./docs/deployment-guide.md)
+- **`main` branch** → Production deployment (requires approval)
+- **`develop` branch** → Staging deployment (automatic)
+- **Pull Requests** → Preview deployments on Vercel
 
 ## 📚 Documentation
 
-### Project Documentation
+Comprehensive documentation is available:
 
-Comprehensive documentation is available in `docs/`:
+### Core Documentation
+- [Project Overview](./docs/project-overview.md) — High-level system overview
+- [Integration Architecture](./docs/integration-architecture.md) — Service integration patterns
+- [Data Models](./docs/data-models.md) — Database schema documentation
 
-- [Documentation Index](./docs/index.md) - Complete documentation index
-- [Project Overview](./docs/project-overview.md) - High-level system overview
-- [Integration Architecture](./docs/integration-architecture.md) - Service integration patterns
-- [Data Models](./docs/data-models.md) - Database schema documentation
+### Architecture & Development
+- [API Architecture](./docs/architecture-senda-api.md) — Backend design details
+- [CMS Architecture](./docs/architecture-senda-cms.md) — Frontend design details
+- [API Development Guide](./docs/development-guide-senda-api.md) — Backend workflow
+- [CMS Development Guide](./docs/development-guide-senda-cms.md) — Frontend workflow
 
-### Architecture Documentation
-
-- [API Architecture](./docs/architecture-senda-api.md) - Backend architecture details
-- [CMS Architecture](./docs/architecture-senda-cms.md) - Frontend architecture details
-- [Hexagonal Architecture](./docs/hexagonal-architecture-api.md) - Clean architecture patterns
-
-### Development Guides
-
-- [API Development Guide](./docs/development-guide-senda-api.md) - Backend development workflow
-- [CMS Development Guide](./docs/development-guide-senda-cms.md) - Frontend development workflow
-- [API README](./senda-api/README.md) - Backend getting started
-- [CMS README](./senda-cms/README.md) - Frontend getting started
+### Quick Start
+- [API README](https://github.com/fariassdev/senda-api) — Backend getting started
+- [CMS README](https://github.com/fariassdev/senda-cms) — Frontend getting started
 
 ## 🧪 Testing
 
-### API Tests
-
 ```bash
-cd senda-api
-make test         # Run all tests
-make test-cov     # Run tests with coverage report
-```
+# API
+cd senda-api && make test              # Run tests
+cd senda-api && make test-cov          # With coverage
 
-### CMS Checks
-
-```bash
-cd senda-cms
-bun typecheck     # TypeScript type checking
-bun lint          # ESLint code quality
-bun test:run      # Run tests
+# CMS
+cd senda-cms && bun typecheck          # Type checking
+cd senda-cms && bun lint               # Linting
+cd senda-cms && bun test:run           # Run tests
 ```
 
 ## 🔐 Security
@@ -253,24 +272,12 @@ bun test:run      # Run tests
 - Environment variables for sensitive data
 - CORS protection configured per environment
 
-## 🤝 Contributing
+## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'feat: add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+Contributions welcome! Please open issues or pull requests.
 
-### Code Quality Standards
+## License
 
-- Follow conventional commit messages
-- Ensure all tests pass
-- Run linting before committing
-- Use TypeScript for frontend type safety
-- Follow Python type hints for backend
-
-## 📄 License
-
-This project is private and proprietary. All rights reserved.
+AGPL-3.0 License — see [LICENSE](./LICENSE) for details
 
 ---
